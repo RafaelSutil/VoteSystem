@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,11 +14,15 @@ namespace VoteProtocol
     
     public class PServer
     {
-        public byte[] PublicKey;
+        public static byte[] PublicKey;
         public static byte[] PrivateKey;
-        public static byte[] SecretKey = new byte[32];
-        public static byte[] ClientPublicKey = new byte[32];
         public static byte[] Certificate = new byte[32];
+
+        public static byte[] ClientCert;
+        public static byte[] ClientPublicKey = new byte[32];
+
+        public static byte[] SecretKey = new byte[32];
+
 
         public const int BUFFER_SIZE = 2048;
         public static byte[] buffer = new byte[BUFFER_SIZE];
@@ -24,18 +30,24 @@ namespace VoteProtocol
 
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-        public PServer(byte[] publicKey, byte[] privateKey)
+        public PServer()
         {
-            PublicKey = publicKey;
-            PrivateKey = privateKey;
+            PublicKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ServerPublicKey.cer")); ;
+            PrivateKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ServerPrivateKey.cer")); ;
+            Certificate = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ServerCertificate.cer"));
         }
 
         public static void Handshake(Socket current)
         {
             // Enviar Certificado
             current.Send(Certificate);
-            // Receber Chave Publica do Cliente
-            ClientPublicKey = ReceiveResponseByte(current);
+            // Receber Certificado do Cliente
+            ClientCert = ReceiveResponseByte(current);
+            // Validar Certificado
+            // Extrair Cahve Publica do certificado
+            X509Certificate2 cert = new X509Certificate2(ClientCert);
+            ClientPublicKey = cert.GetPublicKey();
+
             // gerar Secret Key
             using (var rng = new RNGCryptoServiceProvider())
                 rng.GetBytes(SecretKey);

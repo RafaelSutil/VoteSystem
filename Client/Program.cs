@@ -7,11 +7,10 @@ namespace Client
 {
     class Program
     {
-        public static PClient client;
+        public static PClient client = new PClient();
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Client!");
-            GenKeys();
 
             //Connect
             PClient.ConnectToServer(client.socket);
@@ -33,10 +32,11 @@ namespace Client
                 client.socket.Send(PClient.PackMessage("RAFAEL;123"));
                 /*
                 Console.WriteLine("************************");
-                Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PClient.PublicKey)}");
-                Console.WriteLine($"ServerPublicKey: {Convert.ToBase64String(PClient.ServerPublicKey)}");
-                Console.WriteLine($"ServerCert: {Convert.ToBase64String(PClient.ServerCert)}");
-                Console.WriteLine($"SecretKey: {Convert.ToBase64String(PClient.SecretKey)}");
+                Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PClient.PublicKey)}\n");
+                Console.WriteLine($"ServerPublicKey: {Convert.ToBase64String(PClient.ServerPublicKey)}\n");
+                Console.WriteLine($"ServerCert: {Convert.ToBase64String(PClient.ServerCert)}\n");
+                Console.WriteLine($"ClientCert: {Convert.ToBase64String(PClient.Certificate)}\n");
+                Console.WriteLine($"SecretKey: {Convert.ToBase64String(PClient.SecretKey)}\n");
                 */
 
                 //var x = PClient.PackMessage("oi");
@@ -47,12 +47,12 @@ namespace Client
             }
         }
 
-        public static void GenKeys()
+        public static void GenCertsKeys()
         {
             //Generate a public/private key pair.  
             RSA rsa = RSA.Create();
 
-            client = new PClient(rsa.ExportRSAPublicKey(), rsa.ExportRSAPrivateKey());
+            ;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -14,15 +15,20 @@ namespace VoteProtocol
     {
         public static byte[] PublicKey = new byte[32];
         public static byte[] PrivateKey;
+        public static byte[] Certificate;
+
         public static byte[] ServerCert;
         public static byte[] ServerPublicKey;
+
         public static byte[] SecretKey = new byte[32];
+
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-        public PClient(byte[] publicKey, byte[] privateKey)
+        public PClient()
         {
-            PublicKey = publicKey;
-            PrivateKey = privateKey;
+            PublicKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientPublicKey.cer"));
+            PrivateKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientPrivateKey.cer"));
+            Certificate = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientCertificate.cer"));
         }
 
         public static void HandShake(PClient client)
@@ -37,18 +43,14 @@ namespace VoteProtocol
             ServerPublicKey = cert.GetPublicKey();
 
             // Enviar Chave Publica
-            client.socket.Send(PublicKey);
+            client.socket.Send(Certificate);
             // Receber Kc+(SecretKey)
             using (var rsa = RSA.Create())
             {
                 rsa.ImportRSAPrivateKey(PrivateKey, out _);
                 SecretKey = rsa.Decrypt(ReceiveResponseKey(client.socket), RSAEncryptionPadding.OaepSHA256);
             }
-                
-
-
         }
-
         public static void ConnectToServer(Socket ClientSocket)
         {
             int attempts = 0;

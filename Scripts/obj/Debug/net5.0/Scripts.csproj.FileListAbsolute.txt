@@ -1,0 +1,16 @@
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.exe
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.deps.json
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.runtimeconfig.json
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.runtimeconfig.dev.json
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\ref\Scripts.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\bin\Debug\net5.0\Scripts.pdb
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.csproj.AssemblyReference.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.AssemblyInfoInputs.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.AssemblyInfo.cs
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.csproj.CoreCompileInputs.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\ref\Scripts.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.pdb
+C:\Users\rafae\source\repos\VoteSystemDefinitive\Scripts\obj\Debug\net5.0\Scripts.genruntimeconfig.cache

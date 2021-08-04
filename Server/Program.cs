@@ -11,7 +11,7 @@ namespace Server
 {
     class Program
     {
-        public static PServer server;
+        public static PServer server = new PServer();
         private static readonly List<Socket> clientSockets = new List<Socket>();
         public static int entra = 1;
         
@@ -19,33 +19,24 @@ namespace Server
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Server!");
-            GenCertsKeys();
 
             SetupServer();
             Console.ReadKey();
             /*
             Console.WriteLine("************************");
-            Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PServer.ClientPublicKey)}");
-            Console.WriteLine($"ServerPublicKey: {Convert.ToBase64String(server.PublicKey)}");
-            Console.WriteLine($"ServerCert: {Convert.ToBase64String(PServer.Certificate)}");
-            Console.WriteLine($"SecretKey: {Convert.ToBase64String(PServer.SecretKey)}");
+            Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PServer.ClientPublicKey)}\n");
+            Console.WriteLine($"ServerPublicKey: {Convert.ToBase64String(PServer.PublicKey)}\n");
+            Console.WriteLine($"ServerCert: {Convert.ToBase64String(PServer.Certificate)}\n");
+            Console.WriteLine($"ClientCert: {Convert.ToBase64String(PServer.ClientCert)}\n");
+            Console.WriteLine($"SecretKey: {Convert.ToBase64String(PServer.SecretKey)}\n");
             */
 
-            
+            X509Certificate2 cert = new X509Certificate2(PServer.Certificate);
+            var asdewq = cert.GetPublicKey();
 
             Console.ReadKey();
         }
 
-        public static void GenCertsKeys()
-        {
-            //Generate a public/private key pair.  
-            RSA rsa = RSA.Create();
-            server = new PServer(rsa.ExportRSAPublicKey(), rsa.ExportRSAPrivateKey());
-
-            CertificateRequest req = new CertificateRequest($"CN=ElectionServer", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
-            PServer.Certificate = cert.Export(X509ContentType.Cert);
-        }
 
         private static void SetupServer()
         {

@@ -6,7 +6,9 @@ namespace Scripts
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            GenServerCert.GenCertsKeys();
+            GenClientKey.GenCertsKeys();
+            Console.WriteLine("Chaves e Certificados gerados");
         }
     }
 }
