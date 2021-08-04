@@ -1,0 +1,12 @@
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\bin\Debug\net5.0\VoteProtocol.deps.json
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\bin\Debug\net5.0\VoteProtocol.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\bin\Debug\net5.0\ref\VoteProtocol.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\bin\Debug\net5.0\VoteProtocol.pdb
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.csproj.AssemblyReference.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.AssemblyInfoInputs.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.AssemblyInfo.cs
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.csproj.CoreCompileInputs.cache
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\ref\VoteProtocol.dll
+C:\Users\rafae\source\repos\VoteSystemDefinitive\VoteProtocol\obj\Debug\net5.0\VoteProtocol.pdb
