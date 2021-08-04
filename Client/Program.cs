@@ -29,6 +29,8 @@ namespace Client
                 var msgEnc = PClient.ReceiveResponsePackage(client.socket);
                 var msg = PClient.UnPackMessage(msgEnc);
                 Console.WriteLine(msg);
+
+                client.socket.Send(PClient.PackMessage("RAFAEL;123"));
                 /*
                 Console.WriteLine("************************");
                 Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PClient.PublicKey)}");

@@ -74,8 +74,14 @@ namespace VoteProtocol
             byte[] encryptedBytes = new byte[256];
             byte[] hashValue = new byte[32];
 
-            encryptedBytes = package[0..255];
-            hashValue = package[256..287];
+            for (int i = 0; i < 256; i++)
+            {
+                encryptedBytes[i] = package[i];
+            }
+            for (int i = 256; i < 288; i++)
+            {
+                hashValue[i - 256] = package[i];
+            }
             using (var rsa = RSA.Create())
             using (var hmac = new HMACSHA256(SecretKey))
             {

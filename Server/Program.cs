@@ -13,6 +13,7 @@ namespace Server
     {
         public static PServer server;
         private static readonly List<Socket> clientSockets = new List<Socket>();
+        public static int entra = 1;
         
 
         static void Main(string[] args)
@@ -91,19 +92,38 @@ namespace Server
             byte[] recBuf = new byte[received];
             Array.Copy(PServer.buffer, recBuf, received);
 
-            string text = Encoding.ASCII.GetString(recBuf);
-            //Console.WriteLine("Received Text: " + text);
-
-            if(text == "Hello")
+            if(entra == 1)
             {
-                PServer.Handshake(current);
+                string text = Encoding.ASCII.GetString(recBuf);
+                Console.WriteLine("Received Text: " + text);
+                if (text == "Hello")
+                {
+                    PServer.Handshake(current);
+                }
+                current.Send(PServer.PackMessage("1;Eleição Presidente do Corinthians\nInsira Seus dados: "));
+                entra = 0;
             }
+            else
+            {
+                var m = PServer.UnPackMessage(recBuf);
+                Console.Write("Mensagem descriptografada: ");
+                Console.WriteLine(m);
+            }
+
+
+
+            
+            
+
+
+
+            
             //var package = text.Split(';');
 
             /* Tratar as entradas */
             //current.Send(Encoding.ASCII.GetBytes("Server Hello"));
 
-            current.Send(PServer.PackMessage("1;Eleição Presidente do Corinthians\nInsira Seus dados: "));
+            
 
 
 
