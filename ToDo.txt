@@ -1,8 +1,0 @@
-TO DO
-
-ok
-1. Criar o Script para gerar chaves e certificados para client e server em textfiles
-
-ok
-2. Importar os text files das chaves e certificados
-

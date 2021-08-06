@@ -23,14 +23,73 @@ namespace Client
         private static void RequestLoop()
         {
             var count = 0;
-            while (count != 5)
+            string[] datas;
+            string cpf;
+            string password;
+            bool finished = false;
+            while (!finished)
             {
                 //PClient.SendString(client.socket, "Hellllo");
                 var msgEnc = PClient.ReceiveResponsePackage(client.socket);
                 var msg = PClient.UnPackMessage(msgEnc);
-                Console.WriteLine(msg);
+                //Console.WriteLine(msg);
 
-                client.socket.Send(PClient.PackMessage("RAFAEL/123"));
+                datas = msg.Split('/');
+                switch (datas[0])
+                {
+                    case "X": //Login
+                        Console.WriteLine(datas[1]);
+                        Console.Write("CPF: ");
+                        cpf = Console.ReadLine();
+                        Console.Write("Password: ");
+                        password = Console.ReadLine();
+                        password = PClient.CalculateSHA256(password);
+                        client.socket.Send(PClient.PackMessage("A/" + cpf + "," + password));
+                        break;
+
+                    case "Y": //Vote
+                        Console.WriteLine(datas[1]);
+
+                        var voteSuccess = false;
+                        while (voteSuccess == false)
+                        {
+                            Console.Write("Enter the candidate ID: ");
+                            var candidateId = Console.ReadLine();
+                            var ids = datas[1].Split('\n');
+                            foreach (var id in ids)
+                            {/*
+                                Console.WriteLine("-------" + id.Split(',')[0] + "---------" + candidateId + "-------");
+                                Console.WriteLine(candidateId.Equals(id.Split(',')[0]));
+                                Console.WriteLine("\n\n");*/
+                                if (candidateId.Equals(id.Split(',')[0]))
+                                {
+                                    //vote
+                                    client.socket.Send(PClient.PackMessage("B/"+ candidateId));
+                                    voteSuccess = true;
+
+                                    break;
+                                }
+                            }
+                        }     
+                        break;
+
+                    case "Z":
+                        if(datas[2] == "EndMessage")
+                        {
+                            Console.WriteLine(datas[1]);
+                            finished = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("NAO EH UMA MENSAGEM DE ENCERRAMENTO");
+                        }
+                        break;
+
+                    default:
+                        client.socket.Send(PClient.PackMessage("Default/123"));
+                        break;
+                }
+
                 /*
                 Console.WriteLine("************************");
                 Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PClient.PublicKey)}\n");
@@ -42,10 +101,11 @@ namespace Client
 
                 //var x = PClient.PackMessage("oi");
 
-                Console.ReadKey();
+                //Console.ReadKey();
                 count++;
                 //break;
             }
+            Console.ReadKey();
         }
     }
 }

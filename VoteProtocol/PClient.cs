@@ -8,6 +8,9 @@ using System.Text;
 
 namespace VoteProtocol
 {
+    /// <summary>
+    /// Representa uma instância de Client com métodos e propriedades que auxiliam uma comunicação segura entre cliente e servidor.
+    /// </summary>
     public class PClient
     {
         public static byte[] PublicKey = new byte[32];
@@ -22,7 +25,9 @@ namespace VoteProtocol
         public static int sequenceNumber = 0;
 
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
+        /// <summary>
+        /// Inicializa uma nova instância PClient atribuindo os valores das Chaves e do Certificado armazenados localmente.
+        /// </summary>
         public PClient()
         {
             PublicKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientPublicKey.cer"));
@@ -205,8 +210,14 @@ namespace VoteProtocol
                 {
                     Console.WriteLine("ERRO NO NUMERO DE SEQ");
                 }
-                return records[1];
+                if (records[1] == "0")
+                    return records[2]+"/EndMessage";
+                else
+                    return records[2];
+
             }
+
+
 
 
             /*
@@ -223,6 +234,18 @@ namespace VoteProtocol
             }
 
             return encryptedBytes;*/
+        }
+        public static String CalculateSHA256(String value)
+        {
+            StringBuilder Sb = new StringBuilder();
+            using (SHA256 hash = SHA256Managed.Create())
+            {
+                Encoding enc = Encoding.UTF8;
+                Byte[] result = hash.ComputeHash(enc.GetBytes(value));
+                foreach (Byte b in result)
+                    Sb.Append(b.ToString("x2"));
+            }
+            return Sb.ToString();
         }
     }
 

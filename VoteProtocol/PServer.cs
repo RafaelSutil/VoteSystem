@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 
 namespace VoteProtocol
@@ -23,16 +20,12 @@ namespace VoteProtocol
 
         public static byte[] SecretKey = new byte[32];
 
-
         public const int BUFFER_SIZE = 2048;
         public static byte[] buffer = new byte[BUFFER_SIZE];
 
         public static int sequenceNumber = 0;
 
-
-
-
-        public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        public static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         public PServer()
         {
@@ -56,6 +49,7 @@ namespace VoteProtocol
             using (var rng = new RNGCryptoServiceProvider())
                 rng.GetBytes(SecretKey);
             // Enviar SecretKey criptografado com chave publica do cliente
+
             using(var rsa = RSA.Create())
             {
                 rsa.ImportRSAPublicKey(ClientPublicKey, out _);
@@ -66,12 +60,16 @@ namespace VoteProtocol
 
         }
 
-        public static byte[] PackMessage(string message)
+        public static byte[] PackMessage(string message, bool endMessage)
         {
             byte[] package;
 
             sequenceNumber++;
-            message = sequenceNumber + ";" + message;
+
+            if(endMessage)
+                message = sequenceNumber + ";" + "0" + ";" + message;
+            else
+                message = sequenceNumber + ";" + "1" + ";" + message;
 
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using (var rsa = RSA.Create())
@@ -89,7 +87,7 @@ namespace VoteProtocol
             return package;
         }
 
-        public static string UnPackMessage(byte[] package)
+        public string UnPackMessage(byte[] package)
         {
             byte[] encryptedBytes = new byte[256];
             byte[] hashValue = new byte[32];
@@ -113,7 +111,7 @@ namespace VoteProtocol
                     if (hashValue[i] != computedHash[i])
                     {
                         Console.WriteLine("NAO BATEU COM O HASH");
-                        return "ERRO";
+                        return "ERROR";
                     }
                 }
 
@@ -131,6 +129,7 @@ namespace VoteProtocol
                 else
                 {
                     Console.WriteLine("ERRO NO NUMERO DE SEQ");
+                    return "ERROR";
                 }
 
                 return records[1];
