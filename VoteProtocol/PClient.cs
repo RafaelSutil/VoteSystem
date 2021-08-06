@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace VoteProtocol
 {
@@ -22,6 +19,8 @@ namespace VoteProtocol
 
         public static byte[] SecretKey = new byte[32];
 
+        public static int sequenceNumber = 0;
+
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         public PClient()
@@ -33,22 +32,48 @@ namespace VoteProtocol
 
         public static void HandShake(PClient client)
         {
-            // Enviar Hello
-            SendString(client.socket, "Hello");
-            // Receber Certificado
-            ServerCert = ReceiveResponseByte(client.socket);
-            // Validar Certificado
-            // Extrair Chave Publica do Certificado
-            X509Certificate2 cert = new X509Certificate2(ServerCert);
-            ServerPublicKey = cert.GetPublicKey();
-
-            // Enviar Chave Publica
-            client.socket.Send(Certificate);
-            // Receber Kc+(SecretKey)
-            using (var rsa = RSA.Create())
+            try
             {
-                rsa.ImportRSAPrivateKey(PrivateKey, out _);
-                SecretKey = rsa.Decrypt(ReceiveResponseKey(client.socket), RSAEncryptionPadding.OaepSHA256);
+                // Enviar Hello
+                SendString(client.socket, "Hello");
+                // Receber Certificado
+                ServerCert = ReceiveResponseByte(client.socket);
+                // Validar Certificado
+                X509Certificate2 cert = new X509Certificate2(ServerCert);
+                CertValidate(cert);
+
+                // Extrair Chave Publica do Certificado
+                ServerPublicKey = cert.GetPublicKey();
+
+                // Enviar Chave Publica
+                client.socket.Send(Certificate);
+                // Receber Kc+(SecretKey)
+                using (var rsa = RSA.Create())
+                {
+                    rsa.ImportRSAPrivateKey(PrivateKey, out _);
+                    SecretKey = rsa.Decrypt(ReceiveResponseKey(client.socket), RSAEncryptionPadding.OaepSHA256);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("FALTA DE INTEGRIDADE NO HANDSHAKE");
+                Environment.Exit(123);
+            }
+        }
+
+        public static void CertValidate(X509Certificate2 certificate)
+        {
+            // Check that there is a certificate.
+            if (certificate == null)
+            {
+                throw new ArgumentNullException("certificate");
+            }
+
+            // Check that the certificate issuer matches the configured issuer
+            if ("CN=ElectionServer" != certificate.IssuerName.Name)
+            {
+                throw new Exception
+                  ("Certificate was not issued by a trusted issuer");
             }
         }
         public static void ConnectToServer(Socket ClientSocket)
@@ -120,6 +145,10 @@ namespace VoteProtocol
         public static byte[] PackMessage(string message)
         {
             byte[] package;
+
+            sequenceNumber++;
+            message = sequenceNumber + ";" + message;
+
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using(var rsa = RSA.Create())
             using(var hmac = new HMACSHA256(SecretKey))
@@ -140,7 +169,6 @@ namespace VoteProtocol
             byte[] encryptedBytes = new byte[256];
             byte[] hashValue = new byte[32];
 
-            //encryptedBytes = package[0..255];
             for(int i=0; i<256; i++)
             {
                 encryptedBytes[i] = package[i];
@@ -149,9 +177,6 @@ namespace VoteProtocol
             {
                 hashValue[i-256] = package[i];
             }
-            //hashValue = package[256..287];
-
-
             using (var rsa = RSA.Create())
             using(var hmac = new HMACSHA256(SecretKey))
             {
@@ -166,16 +191,25 @@ namespace VoteProtocol
                         return "ERRO";
                     }
                 }
-
                 // Hash verificada
                 byte[] EncMsg = rsa.Decrypt(encryptedBytes, RSAEncryptionPadding.OaepSHA256);
                 string message = Encoding.ASCII.GetString(EncMsg);
-                return message;
+
+                var records = message.Split(';');
+
+                if (int.Parse(records[0]) == sequenceNumber + 1)
+                {
+                    sequenceNumber++; // atualizar seqnumber
+                }
+                else
+                {
+                    Console.WriteLine("ERRO NO NUMERO DE SEQ");
+                }
+                return records[1];
             }
 
 
             /*
-
             byte[] encryptedBytes;
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using (var rsa = RSA.Create())

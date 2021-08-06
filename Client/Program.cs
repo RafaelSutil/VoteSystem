@@ -22,14 +22,15 @@ namespace Client
 
         private static void RequestLoop()
         {
-            while (true)
+            var count = 0;
+            while (count != 5)
             {
                 //PClient.SendString(client.socket, "Hellllo");
                 var msgEnc = PClient.ReceiveResponsePackage(client.socket);
                 var msg = PClient.UnPackMessage(msgEnc);
                 Console.WriteLine(msg);
 
-                client.socket.Send(PClient.PackMessage("RAFAEL;123"));
+                client.socket.Send(PClient.PackMessage("RAFAEL/123"));
                 /*
                 Console.WriteLine("************************");
                 Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PClient.PublicKey)}\n");
@@ -42,17 +43,9 @@ namespace Client
                 //var x = PClient.PackMessage("oi");
 
                 Console.ReadKey();
-
-                break;
+                count++;
+                //break;
             }
-        }
-
-        public static void GenCertsKeys()
-        {
-            //Generate a public/private key pair.  
-            RSA rsa = RSA.Create();
-
-            ;
         }
     }
 }

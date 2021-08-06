@@ -27,6 +27,10 @@ namespace VoteProtocol
         public const int BUFFER_SIZE = 2048;
         public static byte[] buffer = new byte[BUFFER_SIZE];
 
+        public static int sequenceNumber = 0;
+
+
+
 
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -65,6 +69,10 @@ namespace VoteProtocol
         public static byte[] PackMessage(string message)
         {
             byte[] package;
+
+            sequenceNumber++;
+            message = sequenceNumber + ";" + message;
+
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using (var rsa = RSA.Create())
             using (var hmac = new HMACSHA256(SecretKey))
@@ -112,7 +120,20 @@ namespace VoteProtocol
                 // Hash verificada
                 byte[] EncMsg = rsa.Decrypt(encryptedBytes, RSAEncryptionPadding.OaepSHA256);
                 string message = Encoding.ASCII.GetString(EncMsg);
-                return message;
+
+                var records = message.Split(';');
+
+
+                if(int.Parse(records[0]) == sequenceNumber + 1)
+                {
+                    sequenceNumber++; // atualizar seqnumber
+                }
+                else
+                {
+                    Console.WriteLine("ERRO NO NUMERO DE SEQ");
+                }
+
+                return records[1];
             }
         }
         public static byte[] ReceiveResponseByte(Socket socket)
@@ -123,6 +144,11 @@ namespace VoteProtocol
             var data = new byte[received];
             Array.Copy(buffer, data, received);
             return data;
+        }
+
+        public static void VerifyCertIdentity(X509Certificate2 certificate, string cpf)
+        {
+
         }
     }
 }
