@@ -21,16 +21,14 @@ namespace Server
         public static DateTime closureDate;
         public static List<string> alreadyVoted = new List<string>();
         public static List<string> candidates = new List<string>();
-        public static int[] votes = new int[50];
+        private static int[] votes = new int[50];
 
-        string cpfClient = "";
+        public static string cpfClient = "";
 
         static void Main(string[] args)
         {
             InitialMenu();
-            var x = new Program();
-            x.SetupServer();
-
+            SetupServer();
             /*
             Console.WriteLine("************************");
             Console.WriteLine($"ClientPublicKey: {Convert.ToBase64String(PServer.ClientPublicKey)}\n");
@@ -39,7 +37,6 @@ namespace Server
             Console.WriteLine($"ClientCert: {Convert.ToBase64String(PServer.ClientCert)}\n");
             Console.WriteLine($"SecretKey: {Convert.ToBase64String(PServer.SecretKey)}\n");
             */
-
             Console.ReadKey();
         }
 
@@ -48,22 +45,17 @@ namespace Server
             Console.WriteLine("Welcome to Voting System Server!");
             Console.Write("Enter the voting title: ");
             votingTitle = Console.ReadLine();
-
             Console.WriteLine("Enter the closing date(MM/DD/YYYY HH:mm:SS):");
             string date = Console.ReadLine();
             closureDate = DateTime.Parse(date);
-
             Console.WriteLine("What is the maximum number of votes?");
             howMuchVotes = int.Parse(Console.ReadLine());
-
             /*
             if (DateTime.TryParse(date, out closureDate))
                 Console.WriteLine("Converted '{0}' to {1}.", date, closureDate);
             else
                 Console.WriteLine("Unable to convert '{0}' to a date.", date);
             */
-
-
             Console.WriteLine("Do you want to use predefined candidates? Y/N");
             var opt = Console.ReadLine().ToLower();
             if (opt == "y")
@@ -78,7 +70,6 @@ namespace Server
             {
                 AddCandidates();
             }
-
         }
         private static void AddCandidates()
         {
@@ -95,7 +86,7 @@ namespace Server
                 }
             }
         }
-        private void SetupServer()
+        private static void SetupServer()
         {
             Console.WriteLine("Setting up server...");
             PServer.socket.Bind(new IPEndPoint(IPAddress.Any, 100));
@@ -113,7 +104,7 @@ namespace Server
             return false;
         }
 
-        private void AcceptCallback(IAsyncResult AR)
+        private static void AcceptCallback(IAsyncResult AR)
         {
             Socket socket;
             try
@@ -124,20 +115,14 @@ namespace Server
             {
                 return;
             }
-
- 
-
             clientSockets.Add(socket);
             socket.BeginReceive(PServer.buffer, 0, PServer.BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
-
             PServer.sequenceNumber = 0;
-
             Console.WriteLine("Client connected, waiting for request...");
-
             PServer.socket.BeginAccept(AcceptCallback, null);
         }
 
-        private void ReceiveCallback(IAsyncResult AR)
+        private static void ReceiveCallback(IAsyncResult AR)
         {
             Socket current = (Socket)AR.AsyncState;
             int received;
@@ -148,7 +133,6 @@ namespace Server
             catch (SocketException)
             {
                 Console.WriteLine("Client forcefully disconnected");
-
                 // Don't shutdown because the socket may be disposed and its disconnected anyway.
                 current.Close();
                 clientSockets.Remove(current);
@@ -156,10 +140,8 @@ namespace Server
             }
             byte[] recBuf = new byte[received];
             Array.Copy(PServer.buffer, recBuf, received);
-
             string msgReceive;
             string[] datas;
-
             if(PServer.sequenceNumber == 0)
             {
                 //Receber Hello
@@ -185,11 +167,8 @@ namespace Server
                     current.Send(PServer.PackMessage($"Z/The hash or sequence number did not match", true));
                     current.Shutdown(SocketShutdown.Both);
                     current.Close();
-                }
-                    
-
-                datas = msgReceive.Split('/');
-                
+                }                 
+                datas = msgReceive.Split('/');                
                 X509Certificate2 clientCert;
                 switch (datas[0])
                 {
@@ -197,7 +176,6 @@ namespace Server
                         // Conferir login no banco de dados
                         var Users = File.ReadAllLines(@".\Users.txt");
                         bool loginSuccess = false;
-
                         foreach(var user in Users)
                         {
                             if(datas[1] == user)
@@ -211,7 +189,6 @@ namespace Server
                                     current.Send(PServer.PackMessage($"Z/Your CPF does not match the certificate sent earlier", true));
 
                                 }
-
                                 // Verificar se ja votou
                                 if (alreadyVoted.Contains(cpfClient) && ElectionIsActive())
                                 {
@@ -219,7 +196,6 @@ namespace Server
                                     current.Send(PServer.PackMessage($"Z/Voting is open and you have already voted", true));
                                     break;
                                 }
-
                                 //verificar se eleicao ta ativa
                                 if (ElectionIsActive())
                                 {
@@ -254,16 +230,13 @@ namespace Server
                             current.Send(PServer.PackMessage($"X/Incorrect password!\nEnter your credentials again: ", false));
                         }
                         break;
-
                     case "B":
-
                         howMuchVotes--;
                         //Recebe voto
                         votes[int.Parse(datas[1])]++;
                         // Contabiliza voto
                         alreadyVoted.Add(cpfClient);
                         // Manda msg de finalizacao com tipo 0
-
                         int i = 1;
                         foreach(var x in candidates)
                         {
@@ -275,65 +248,13 @@ namespace Server
                         {
                             Console.WriteLine(x);
                         }
-
-
                         current.Send(PServer.PackMessage($"Z/Thank you for voting", true));
                         break;
                     default:
                         Console.WriteLine("default");
                         break;
-
-
                 }
             }
-
-            /*
-            switch (PServer.sequenceNumber)
-            {
-                case 1:
-                    
-                    Console.Write("1 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Estamos juntos"));
-                    break;
-                case 3:
-                    m = PServer.UnPackMessage(recBuf);
-                    Console.Write("2 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Vai Corinthians"));
-                    break;
-                case 5:
-                    m = PServer.UnPackMessage(recBuf);
-                    Console.Write("3 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Bando de loucos"));
-                    break;
-                case 7:
-                    m = PServer.UnPackMessage(recBuf);
-                    Console.Write("4 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Pra cima delas"));
-                    break;
-                case 9:
-                    m = PServer.UnPackMessage(recBuf);
-                    Console.Write("5 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Nao tem pra ninguem"));
-                    break;
-                case 11:
-                    m = PServer.UnPackMessage(recBuf);
-                    Console.Write("5 - Mensagem descriptografada: ");
-                    Console.WriteLine(m);
-                    current.Send(PServer.PackMessage("Nao para de lutar"));
-                    break;
-                default:
-                    Console.WriteLine("Chegou no default");
-                    break;
-            }*/
-            //var package = text.Split(';');
-
-            /* Tratar as entradas */
-            //current.Send(Encoding.ASCII.GetBytes("Server Hello"));
             try
             {
                 current.BeginReceive(PServer.buffer, 0, PServer.BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);

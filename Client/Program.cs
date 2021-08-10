@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using VoteProtocol;
@@ -13,11 +15,32 @@ namespace Client
             Console.WriteLine("Hello Client!");
 
             //Connect
-            PClient.ConnectToServer(client.socket);
+            ConnectToServer();
             //Handshake
-            PClient.HandShake(client);
+            client.HandShake();
             //While com rcvMsg
             RequestLoop();
+        }
+
+        public static void ConnectToServer()
+        {
+            int attempts = 0;
+            while (!client.socket.Connected)
+            {
+                try
+                {
+                    attempts++;
+                    Console.WriteLine("Connection attempt " + attempts);
+                    // Change IPAddress.Loopback to a remote IP to connect to a remote host.
+                    client.socket.Connect(IPAddress.Loopback, 100);
+                }
+                catch (SocketException)
+                {
+                    //Console.Clear();
+                }
+            }
+            //Console.Clear();
+            Console.WriteLine("Connected");
         }
 
         private static void RequestLoop()
@@ -29,9 +52,8 @@ namespace Client
             bool finished = false;
             while (!finished)
             {
-                //PClient.SendString(client.socket, "Hellllo");
-                var msgEnc = PClient.ReceiveResponsePackage(client.socket);
-                var msg = PClient.UnPackMessage(msgEnc);
+                var msgEnc = client.ReceiveResponsePackage();
+                var msg = client.UnPackMessage(msgEnc);
                 //Console.WriteLine(msg);
 
                 datas = msg.Split('/');
@@ -43,8 +65,8 @@ namespace Client
                         cpf = Console.ReadLine();
                         Console.Write("Password: ");
                         password = Console.ReadLine();
-                        password = PClient.CalculateSHA256(password);
-                        client.socket.Send(PClient.PackMessage("A/" + cpf + "," + password));
+                        password = client.CalculateSHA256(password);
+                        client.socket.Send(client.PackMessage("A/" + cpf + "," + password));
                         break;
 
                     case "Y": //Vote
@@ -64,7 +86,7 @@ namespace Client
                                 if (candidateId.Equals(id.Split(',')[0]))
                                 {
                                     //vote
-                                    client.socket.Send(PClient.PackMessage("B/"+ candidateId));
+                                    client.socket.Send(client.PackMessage("B/"+ candidateId));
                                     voteSuccess = true;
 
                                     break;
@@ -86,7 +108,7 @@ namespace Client
                         break;
 
                     default:
-                        client.socket.Send(PClient.PackMessage("Default/123"));
+                        client.socket.Send(client.PackMessage("Default/123"));
                         break;
                 }
 

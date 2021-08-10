@@ -9,64 +9,74 @@ using System.Text;
 namespace VoteProtocol
 {
     /// <summary>
-    /// Representa uma instância de Client com métodos e propriedades que auxiliam uma comunicação segura entre cliente e servidor.
+    /// Representa uma instância do cliente com métodos e propriedades que auxiliam uma comunicação segura entre cliente e servidor.
     /// </summary>
     public class PClient
     {
+        const string CLIENT_PUBLICKEY_DIRECTORY = "..\\Certs\\ClientPublicKey.cer";
+        const string CLIENT_PRIVATEKEY_DIRECTORY = "..\\Certs\\ClientPrivateKey.cer";
+        const string CLIENT_CERTIFICATE_DIRECTORY = "..\\Certs\\ClientCertificate.cer";
+
         public static byte[] PublicKey = new byte[32];
-        public static byte[] PrivateKey;
+        private static byte[] PrivateKey;
         public static byte[] Certificate;
 
         public static byte[] ServerCert;
         public static byte[] ServerPublicKey;
 
-        public static byte[] SecretKey = new byte[32];
+        private static byte[] SecretKey = new byte[32];
 
-        public static int sequenceNumber = 0;
+        private static int sequenceNumber = 0;
 
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
         /// <summary>
         /// Inicializa uma nova instância PClient atribuindo os valores das Chaves e do Certificado armazenados localmente.
         /// </summary>
         public PClient()
         {
-            PublicKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientPublicKey.cer"));
-            PrivateKey = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientPrivateKey.cer"));
-            Certificate = Convert.FromBase64String(File.ReadAllText("..\\Certs\\ClientCertificate.cer"));
+            PublicKey = Convert.FromBase64String(File.ReadAllText(CLIENT_PUBLICKEY_DIRECTORY));
+            PrivateKey = Convert.FromBase64String(File.ReadAllText(CLIENT_PRIVATEKEY_DIRECTORY));
+            Certificate = Convert.FromBase64String(File.ReadAllText(CLIENT_CERTIFICATE_DIRECTORY));
         }
-
-        public static void HandShake(PClient client)
+        /// <summary>
+        /// Realiza a troca de certificados entre cliente e servidor e recebe a chave secreta a fim de gerar o HMAC das mensagens.
+        /// </summary>
+        /// <exception cref="Exception">Exceção é lançada e o cliente é finalizado quando ocorre um erro em alguma etapa do handshake.</exception>
+        public void HandShake()
         {
             try
             {
                 // Enviar Hello
-                SendString(client.socket, "Hello");
+                SendString("Hello");
                 // Receber Certificado
-                ServerCert = ReceiveResponseByte(client.socket);
+                ServerCert = ReceiveResponseByte();
                 // Validar Certificado
                 X509Certificate2 cert = new X509Certificate2(ServerCert);
                 CertValidate(cert);
-
                 // Extrair Chave Publica do Certificado
                 ServerPublicKey = cert.GetPublicKey();
-
                 // Enviar Chave Publica
-                client.socket.Send(Certificate);
+                socket.Send(Certificate);
                 // Receber Kc+(SecretKey)
                 using (var rsa = RSA.Create())
                 {
                     rsa.ImportRSAPrivateKey(PrivateKey, out _);
-                    SecretKey = rsa.Decrypt(ReceiveResponseKey(client.socket), RSAEncryptionPadding.OaepSHA256);
+                    SecretKey = rsa.Decrypt(ReceiveResponseKey(), RSAEncryptionPadding.OaepSHA256);
                 }
             }
             catch (Exception)
             {
-                Console.WriteLine("FALTA DE INTEGRIDADE NO HANDSHAKE");
-                Environment.Exit(123);
+                throw new Exception("Handshake Error");
             }
         }
-
-        public static void CertValidate(X509Certificate2 certificate)
+        /// <summary>
+        /// Checa se o certificado recebido do servidor é válido.
+        /// </summary>
+        /// <param name="certificate">Certificado recebido do servidor.</param>
+        /// <exception cref="ArgumentNullException">Exceção é lançada quando o certificado é nulo</exception>
+        /// <exception cref="Exception">Exceção é lançada quando o certificado não é do Servidor</exception>
+        private static void CertValidate(X509Certificate2 certificate)
         {
             // Check that there is a certificate.
             if (certificate == null)
@@ -80,44 +90,21 @@ namespace VoteProtocol
                 throw new Exception
                   ("Certificate was not issued by a trusted issuer");
             }
-        }
-        public static void ConnectToServer(Socket ClientSocket)
-        {
-            int attempts = 0;
-            while (!ClientSocket.Connected)
-            {
-                try
-                {
-                    attempts++;
-                    Console.WriteLine("Connection attempt " + attempts);
-                    // Change IPAddress.Loopback to a remote IP to connect to a remote host.
-                    ClientSocket.Connect(IPAddress.Loopback, 100);
-                }
-                catch (SocketException)
-                {
-                    //Console.Clear();
-                }
-            }
-            //Console.Clear();
-            Console.WriteLine("Connected");
-        }
-
-        public static void SendString(Socket socket, string text)
+        }        
+        /// <summary>
+        /// Envia uma string de dados para um Socket conectado.
+        /// </summary>
+        /// <param name="text">String a ser enviada</param>
+        private void SendString(string text)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(text);
             socket.Send(buffer, 0, buffer.Length, SocketFlags.None);
         }
-        public static string ReceiveResponseString(Socket socket)
-        {
-            var buffer = new byte[2048];
-            int received = socket.Receive(buffer, SocketFlags.None);
-            if (received == 0) return "ERRO";
-            var data = new byte[received];
-            Array.Copy(buffer, data, received);
-            string text = Encoding.ASCII.GetString(data);
-            return text;
-        }
-        public static byte[] ReceiveResponseByte(Socket socket)
+        /// <summary>
+        /// Recebe um vetor de Bytes de um Socket conectado.
+        /// </summary>
+        /// <returns>Retorna os bytes recebidos.</returns>
+        private byte[] ReceiveResponseByte()
         {
             var buffer = new byte[2048];
             int received = socket.Receive(buffer, SocketFlags.None);
@@ -126,8 +113,11 @@ namespace VoteProtocol
             Array.Copy(buffer, data, received);
             return data;
         }
-
-        public static byte[] ReceiveResponseKey(Socket socket)
+        /// <summary>
+        /// Recebe um vetor de bytes que representa a chave secreta enviada do servidor conectado.
+        /// </summary>
+        /// <returns>Retorna a chave secreta.</returns>
+        private byte[] ReceiveResponseKey()
         {
             var buffer = new byte[256];
             int received = socket.Receive(buffer, SocketFlags.None);
@@ -136,8 +126,11 @@ namespace VoteProtocol
             Array.Copy(buffer, data, received);
             return data;
         }
-
-        public static byte[] ReceiveResponsePackage(Socket socket)
+        /// <summary>
+        /// Recebe um vetor de bytes que representa um pacote que foi enviado pelo servidor.
+        /// </summary>
+        /// <returns>Retorna o pacote recebido.</returns>
+        public byte[] ReceiveResponsePackage()
         {
             var buffer = new byte[288];
             int received = socket.Receive(buffer, SocketFlags.None);
@@ -146,14 +139,16 @@ namespace VoteProtocol
             Array.Copy(buffer, data, received);
             return data;
         }
-
-        public static byte[] PackMessage(string message)
+        /// <summary>
+        /// Empacota uma mensagem adicionando o número de sequência, criptografando e concatenando com o HMAC da mensagem encriptada.
+        /// </summary>
+        /// <param name="message">String a ser empacotada.</param>
+        /// <returns>Retorna o pacote pronto para ser transmitido com segurança.</returns>
+        public byte[] PackMessage(string message)
         {
             byte[] package;
-
             sequenceNumber++;
             message = sequenceNumber + ";" + message;
-
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using(var rsa = RSA.Create())
             using(var hmac = new HMACSHA256(SecretKey))
@@ -166,14 +161,19 @@ namespace VoteProtocol
                 encryptedBytes.CopyTo(package, 0);
                 hashValue.CopyTo(package, encryptedBytes.Length);
             }
-
             return package;
         }
-        public static string UnPackMessage(byte[] package)
+        /// <summary>
+        /// Desempacota a mensagem recebida do servidor, verifica a integridade comparando o HMAC com o gerado localmente, verifica se o número de sequencia é o esperado e o atualiza.
+        /// </summary>
+        /// <param name="package">Pacote a ser desempacotado.</param>
+        /// <returns>Retorna a mensagem descriptografada sem o número de sequencia, sem o tipo e sem o HMAC.</returns>
+        /// <exception cref="ArgumentException">Exceção é lançada quando o HMAC não bate com o calculado localmente.</exception>
+        /// <exception cref="Exception">Exceção é lançada quando o número de sequencia não é o esperado.</exception>
+        public string UnPackMessage(byte[] package)
         {
             byte[] encryptedBytes = new byte[256];
             byte[] hashValue = new byte[32];
-
             for(int i=0; i<256; i++)
             {
                 encryptedBytes[i] = package[i];
@@ -187,55 +187,38 @@ namespace VoteProtocol
             {
                 rsa.ImportRSAPrivateKey(PrivateKey, out _); //descriptografa com chave do cliente
                 byte[] computedHash = hmac.ComputeHash(encryptedBytes);
-
                 for(int i=0; i<hashValue.Length; i++)
                 {
                     if(hashValue[i] != computedHash[i])
                     {
-                        Console.WriteLine("NAO BATEU COM O HASH PCLIENT");
-                        return "ERRO";
+                        throw new ArgumentException("Message without integrity");
                     }
                 }
                 // Hash verificada
                 byte[] EncMsg = rsa.Decrypt(encryptedBytes, RSAEncryptionPadding.OaepSHA256);
                 string message = Encoding.ASCII.GetString(EncMsg);
-
                 var records = message.Split(';');
-
+                // #seq ; type ; content
                 if (int.Parse(records[0]) == sequenceNumber + 1)
                 {
                     sequenceNumber++; // atualizar seqnumber
                 }
                 else
                 {
-                    Console.WriteLine("ERRO NO NUMERO DE SEQ");
+                    throw new Exception("Sequence number does not match");
                 }
                 if (records[1] == "0")
                     return records[2]+"/EndMessage";
                 else
                     return records[2];
-
             }
-
-
-
-
-            /*
-            byte[] encryptedBytes;
-            var EncMsg = Encoding.ASCII.GetBytes(message);
-            using (var rsa = RSA.Create())
-            using (var hmac = new HMACSHA256(SecretKey))
-            {
-                rsa.ImportRSAPublicKey(PublicKey, out _);
-                encryptedBytes = rsa.Encrypt(EncMsg, RSAEncryptionPadding.OaepSHA256);
-                byte[] hashValue = hmac.ComputeHash(encryptedBytes);
-
-                encryptedBytes.Concat(hashValue);
-            }
-
-            return encryptedBytes;*/
         }
-        public static String CalculateSHA256(String value)
+        /// <summary>
+        /// Calcula o valor SHA256 de uma dada string.
+        /// </summary>
+        /// <param name="value">String a ser convertida</param>
+        /// <returns>Retorna a string do valor calculado.</returns>
+        public String CalculateSHA256(String value)
         {
             StringBuilder Sb = new StringBuilder();
             using (SHA256 hash = SHA256Managed.Create())
