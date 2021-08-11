@@ -28,6 +28,7 @@ namespace VoteProtocol
 
         private static int sequenceNumber = 0;
 
+
         public Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         /// <summary>
@@ -140,7 +141,7 @@ namespace VoteProtocol
             return data;
         }
         /// <summary>
-        /// Empacota uma mensagem adicionando o número de sequência, criptografando e concatenando com o HMAC da mensagem encriptada.
+        /// Empacota uma mensagem adicionando o número de sequência e um número randomico, criptografando e concatenando com o HMAC da mensagem criptografada.
         /// </summary>
         /// <param name="message">String a ser empacotada.</param>
         /// <returns>Retorna o pacote pronto para ser transmitido com segurança.</returns>
@@ -148,7 +149,10 @@ namespace VoteProtocol
         {
             byte[] package;
             sequenceNumber++;
-            message = sequenceNumber + ";" + message;
+
+            var rdn = new Random();
+
+            message = sequenceNumber + ";" + message + ";" + rdn.Next();
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using(var rsa = RSA.Create())
             using(var hmac = new HMACSHA256(SecretKey))

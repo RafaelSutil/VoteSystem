@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -29,7 +30,7 @@ namespace VoteProtocol
         public const int BUFFER_SIZE = 2048;
         public static byte[] buffer = new byte[BUFFER_SIZE];
 
-        public static int sequenceNumber = 0;
+        public static int sequenceNumber = 0;      
 
         public static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         /// <summary>
@@ -62,12 +63,11 @@ namespace VoteProtocol
             {
                 rsa.ImportRSAPublicKey(ClientPublicKey, out _);
                 byte[] encryptedBytes = rsa.Encrypt(SecretKey, RSAEncryptionPadding.OaepSHA256);
-                //Console.WriteLine(encryptedBytes.Length);
                 current.Send(encryptedBytes);
             }
         }
         /// <summary>
-        /// Empacota uma mensagem adicionando o número de sequência, tipo, criptografando e concatenando com o HMAC da mensagem encriptada.
+        /// Empacota uma mensagem adicionando o número de sequência, tipo e um número randomico, criptografando e concatenando com o HMAC da mensagem criptografada.
         /// </summary>
         /// <param name="message">String a ser empacotada</param>
         /// <param name="endMessage">Booleano que indica se o pacote é de encerramento de conexão.</param>
@@ -76,10 +76,14 @@ namespace VoteProtocol
         {
             byte[] package;
             sequenceNumber++;
-            if(endMessage)
-                message = sequenceNumber + ";" + "0" + ";" + message;
+
+            var rdn = new Random();            
+            
+            if (endMessage)
+                message = sequenceNumber + ";" + "0" + ";" + message + ";" + rdn.Next();
             else
-                message = sequenceNumber + ";" + "1" + ";" + message;
+                message = sequenceNumber + ";" + "1" + ";" + message + ";" + rdn.Next();          
+
             var EncMsg = Encoding.ASCII.GetBytes(message);
             using (var rsa = RSA.Create())
             using (var hmac = new HMACSHA256(SecretKey))
