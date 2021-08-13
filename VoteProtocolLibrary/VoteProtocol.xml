@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VoteProtocol</name>
+    </assembly>
+    <members>
+        <member name="T:VoteProtocol.PClient">
+            <summary>
+            Representa uma instância do cliente com métodos e propriedades que auxiliam uma comunicação segura entre cliente e servidor.
+            </summary>
+        </member>
+        <member name="M:VoteProtocol.PClient.#ctor">
+            <summary>
+            Inicializa uma nova instância PClient atribuindo os valores das Chaves e do Certificado armazenados localmente.
+            </summary>
+        </member>
+        <member name="M:VoteProtocol.PClient.HandShake">
+            <summary>
+            Realiza a troca de certificados entre cliente e servidor e recebe a chave secreta a fim de gerar o HMAC das mensagens.
+            </summary>
+            <exception cref="T:System.Exception">Exceção é lançada e o cliente é finalizado quando ocorre um erro em alguma etapa do handshake.</exception>
+        </member>
+        <member name="M:VoteProtocol.PClient.CertValidate(System.Security.Cryptography.X509Certificates.X509Certificate2)">
+            <summary>
+            Checa se o certificado recebido do servidor é válido.
+            </summary>
+            <param name="certificate">Certificado recebido do servidor.</param>
+            <exception cref="T:System.ArgumentNullException">Exceção é lançada quando o certificado é nulo</exception>
+            <exception cref="T:System.Exception">Exceção é lançada quando o certificado não é do Servidor</exception>
+        </member>
+        <member name="M:VoteProtocol.PClient.SendString(System.String)">
+            <summary>
+            Envia uma string de dados para um Socket conectado.
+            </summary>
+            <param name="text">String a ser enviada</param>
+        </member>
+        <member name="M:VoteProtocol.PClient.ReceiveResponseBytes">
+            <summary>
+            Recebe um vetor de Bytes de um Socket conectado.
+            </summary>
+            <returns>Retorna os bytes recebidos.</returns>
+        </member>
+        <member name="M:VoteProtocol.PClient.ReceiveResponseKey">
+            <summary>
+            Recebe um vetor de bytes que representa a chave secreta enviada do servidor conectado.
+            </summary>
+            <returns>Retorna a chave secreta.</returns>
+        </member>
+        <member name="M:VoteProtocol.PClient.ReceiveResponsePackage">
+            <summary>
+            Recebe um vetor de bytes que representa um pacote que foi enviado pelo servidor.
+            </summary>
+            <returns>Retorna o pacote recebido.</returns>
+        </member>
+        <member name="M:VoteProtocol.PClient.PackMessage(System.String)">
+            <summary>
+            Empacota uma mensagem adicionando o número de sequência e um número randômico, criptografando e concatenando com o HMAC da mensagem criptografada.
+            </summary>
+            <param name="message">String a ser empacotada.</param>
+            <returns>Retorna o pacote pronto para ser transmitido com segurança.</returns>
+        </member>
+        <member name="M:VoteProtocol.PClient.UnPackMessage(System.Byte[])">
+            <summary>
+            Desempacota a mensagem recebida do servidor, verifica a integridade comparando o HMAC com o gerado localmente, verifica se o número de sequencia é o esperado e o atualiza.
+            </summary>
+            <param name="package">Pacote a ser desempacotado.</param>
+            <returns>Retorna a mensagem descriptografada sem o número de sequencia, sem o tipo e sem o HMAC.</returns>
+            <exception cref="T:System.ArgumentException">Exceção é lançada quando o HMAC não bate com o calculado localmente.</exception>
+            <exception cref="T:System.Exception">Exceção é lançada quando o número de sequencia não é o esperado.</exception>
+        </member>
+        <member name="M:VoteProtocol.PClient.CalculateSHA256(System.String)">
+            <summary>
+            Calcula o valor SHA256 de uma dada string.
+            </summary>
+            <param name="value">String a ser convertida</param>
+            <returns>Retorna a string do valor calculado.</returns>
+        </member>
+        <member name="T:VoteProtocol.PServer">
+            <summary>
+            Representa uma instância do servidor com métodos e propriedades que auxiliam uma comunicação segura.
+            </summary>
+        </member>
+        <member name="M:VoteProtocol.PServer.#ctor">
+            <summary>
+            Inicializa uma nova instância PServer atribuindo os valores das Chaves e do Certificado armazenados localmente.
+            </summary>
+        </member>
+        <member name="M:VoteProtocol.PServer.Handshake(System.Net.Sockets.Socket)">
+            <summary>
+            Realiza a troca de certificados entre cliente e servidor, calcula e envia a chave secreta a fim de gerar o HMAC das mensagens.
+            </summary>
+            <param name="current"></param>
+        </member>
+        <member name="M:VoteProtocol.PServer.PackMessage(System.String,System.Boolean)">
+            <summary>
+            Empacota uma mensagem adicionando o número de sequência, tipo e um número randômico, criptografando e concatenando com o HMAC da mensagem criptografada.
+            </summary>
+            <param name="message">String a ser empacotada</param>
+            <param name="endMessage">Booleano que indica se o pacote é de encerramento de conexão.</param>
+            <returns>Retorna o pacote pronto para ser transmitido com segurança.</returns>
+        </member>
+        <member name="M:VoteProtocol.PServer.UnPackMessage(System.Byte[])">
+            <summary>
+            Desempacota a mensagem recebida do cliente, verifica a integridade comparando o HMAC com o gerado localmente, verifica se o número de sequência é o esperado e o atualiza.
+            </summary>
+            <param name="package">Pacote a ser desempacotado.</param>
+            <returns>Retorna a mensagem descriptografada sem o número de sequência, sem o tipo e sem o HMAC caso esteja tudo certo, ou retorna a string "ERROR".</returns>
+        </member>
+        <member name="M:VoteProtocol.PServer.ReceiveResponseBytes(System.Net.Sockets.Socket)">
+            <summary>
+            Recebe um vetor de Bytes de um Socket conectado.
+            </summary>
+            <param name="socket"></param>
+            <returns>Retorna os bytes recebidos.</returns>
+        </member>
+    </members>
+</doc>
