@@ -14,7 +14,7 @@ O protocolo implementado garante a segurança, mas como?
 
 Foi dado que o invasor poderá capturar, ler e injetar pacotes na rede, além de se passar por qualquer IP com a intenção de fraudar a votação ou quebrar o sigilo do voto.
 
-Para garantirmos a confidencialidade da mensagem (o voto) basta criptografamos a mensagem, que o invasor será impossibilitado de ler, para isso, sempre usaremos a chave pública do destinatário. Vale ressaltar que o invasor também tem acesso às chaves públicas de todos os atores da comunicação, então poderia tentar decifrar a mensagem por tentativa e erro criptografando possíveis mensagens de voto, isso não acontece nesta biblioteca pois a mensagem enviada possui um campo único (nonce).
+Para garantirmos a confidencialidade da mensagem (o voto) basta criptografarmos a mensagem, que o invasor será impossibilitado de ler, para isso, sempre usaremos a chave pública do destinatário. Vale ressaltar que o invasor também tem acesso às chaves públicas de todos os atores da comunicação, então poderia tentar decifrar a mensagem por tentativa e erro criptografando possíveis mensagens de voto, isso não acontece nesta biblioteca pois a mensagem enviada possui um campo único (nonce).
 
 Outro campo importante para estar no pacote a ser enviado é o HMAC, com ele conseguimos garantir a integridade pois vamos gerar outro HMAC no receptor para verificar se é o mesmo que foi enviado junto a mensagem, e também podemos garantir a autenticidade pois no handshake é atribuído uma chave secreta única para cada cliente, e esta chave é usada para calcular o HMAC. O login só será feito após termos uma conexão segura, o CPF do login deve ser o mesmo CPF do certificado enviado anteriormente no handshake.
 
