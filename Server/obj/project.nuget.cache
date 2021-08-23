@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4wuRO0L3vzANLsa/wfrFJXltGeeg6Abnj//SSUWcVgLD/ZYOJrVZSGZhrYNoDRUB7JuYqqIidfkj4lJCcCWe+Q==",
+  "dgSpecHash": "dNVdqHWtKIfNvLCI6q6XnQPI9Ox4Z/YNy3QG/9mI2Iq6x6ziIvTvdZMLuq3qvCcJ1GuRAbZC4+koTPPRMT6Z/w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\rafae\\source\\repos\\VoteApplication\\Server\\Server.csproj",
+  "projectFilePath": "C:\\Users\\rafae\\source\\repos\\VoteSystemApplication\\Server\\Server.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

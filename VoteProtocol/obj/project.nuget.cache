@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "E6R61oFm2mDhWuhwUWkyUYVqNz94k7wKlHIZbPOy0hRBEfNUTyx7HlgIOGeET4l42/Nb8GA0pYechEFBDyjccw==",
+  "dgSpecHash": "o02C6T4lUBI6sxHHa0TkXBbO9bOlJQU2A6LmDDTnqt78wNqZMocYCsdo8qvHdyBY2bRnXtmWTCPkulvxdxBf7A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\rafae\\source\\repos\\VoteApplication\\VoteProtocol\\VoteProtocol.csproj",
+  "projectFilePath": "C:\\Users\\rafae\\source\\repos\\VoteSystemApplication\\VoteProtocol\\VoteProtocol.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\rafae\\source\\repos\\VoteApplication\\VoteProtocol\\VoteProtocol.csproj",
+      "projectUniqueName": "C:\\Users\\rafae\\source\\repos\\VoteSystemApplication\\VoteProtocol\\VoteProtocol.csproj",
       "projectName": "VoteProtocol",
-      "projectPath": "C:\\Users\\rafae\\source\\repos\\VoteApplication\\VoteProtocol\\VoteProtocol.csproj",
+      "projectPath": "C:\\Users\\rafae\\source\\repos\\VoteSystemApplication\\VoteProtocol\\VoteProtocol.csproj",
       "packagesPath": "C:\\Users\\rafae\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\rafae\\source\\repos\\VoteApplication\\VoteProtocol\\obj\\",
+      "outputPath": "C:\\Users\\rafae\\source\\repos\\VoteSystemApplication\\VoteProtocol\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\rafae\\AppData\\Roaming\\NuGet\\NuGet.Config",
